@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException
 from interface import Interface
 import time
 class Parsing:
@@ -51,9 +52,9 @@ class Parsing:
 
 
     def parse_web(self,input,span,container,title,href,price,condition):
-        # self.options = Options()
-        # self.options.add_argument("--headless=new")
-        self.driver = webdriver.Chrome()
+        self.options = Options()
+        self.options.add_argument("window-size=1920,1080")
+        self.driver = webdriver.Chrome(options=self.options)
         self.driver.get(self.url)
         self.input = WebDriverWait(self.driver,10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR,input))
@@ -65,25 +66,22 @@ class Parsing:
             EC.presence_of_element_located((By.CSS_SELECTOR,span))
         )
 
-        # for i in range(1,4):
-        #     try:
-        #         page_link = self.driver.find_element(By.LINK_TEXT,str(i))
-        #         page_link.click()
-        self.container = WebDriverWait(self.driver,10).until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR,container))
-        )
         self.title = []
         self.href = []
         self.price = []
         self.condition = []
+        
+        self.container = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_all_elements_located((By.CSS_SELECTOR, container))
+        )
+        
         for cont in self.container:
             try:
-                self.title.append(cont.find_element(By.CSS_SELECTOR,title).text)
-                self.href.append(cont.find_element(By.CSS_SELECTOR,href).get_attribute("href"))
-                self.price.append(cont.find_element(By.CSS_SELECTOR,price).text)
-                self.condition.append(cont.find_element(By.CSS_SELECTOR,condition).text)
+                self.title.append(cont.find_element(By.CSS_SELECTOR, title).text)
+                self.href.append(cont.find_element(By.CSS_SELECTOR, href).get_attribute("href"))
+                self.price.append(cont.find_element(By.CSS_SELECTOR, price).text)
+                self.condition.append(cont.find_element(By.CSS_SELECTOR, condition).text)
             except Exception:
-                print("Skip")
                 continue
 
 interface = Interface()
