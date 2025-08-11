@@ -7,6 +7,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException
 from interface import Interface
 from selenium_stealth import stealth
+from itertools import zip_longest
 import time
 
 OLX_URL = "https://www.olx.uz/"
@@ -21,9 +22,8 @@ class Parsing:
 
     def get_data(self):
         with open("Объявления.txt","w",encoding="UTF-8") as file:
-            for t,p,h,c in zip(self.title,self.price,self.href,self.condition):
+            for t,p,h,c in zip_longest(self.title,self.price,self.href,self.condition,fillvalue=""):
                 file.write(f"{t} || {p} || {h} || {c}  \n")
-            
             print("Товары успешно добавлены в Объявления.txt")
 
 
@@ -31,11 +31,13 @@ class Parsing:
         self.options = Options()
         self.options.add_argument("window-size=1920,1080")
         self.driver = webdriver.Chrome(options=self.options)
-        stealth(self.driver,languages=['en-US',"en"],
+        stealth(self.driver,languages=['en-US',"en","ru-RU","ru"],
                 vendor="Google Inc.",
                 platform="Win32",
                 webgl_vendor="Intel Inc.",
-                renderer="Intel Iris OpenGL Engine")
+                renderer="Intel(R) UHD Graphics 630",
+                fix_hairline=True
+                )
         self.driver.get(self.url)
         self.input = WebDriverWait(self.driver,10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR,input))
@@ -52,29 +54,54 @@ class Parsing:
         
         if self.url == OZON_URL or self.url == YANDEX_URL:
             self.scroll_page()
+
+        elif self.url == UZUM_URL:
+            self.load_next_page()
         
+        time.sleep(3)
         self.container = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_all_elements_located((By.CSS_SELECTOR, container))
-        )
-        
-        for cont in self.container:
-            try:
-                self.title.append(cont.find_element(By.CSS_SELECTOR, title).text)
+                EC.presence_of_all_elements_located((By.CSS_SELECTOR, container)))
 
-                self.href.append(cont.find_element(By.CSS_SELECTOR, href).get_attribute("href"))
-                self.price.append(cont.find_element(By.CSS_SELECTOR, price).text)
-                self.condition.append(cont.find_element(By.CSS_SELECTOR, condition).text)
-            except Exception:
-                continue
+        #* для узума тк есть некоое задержка изза чего элементы остаются пустым
+        if self.url == UZUM_URL or self.url == YANDEX_URL:
+            time.sleep(5)
+            for i in range(len(self.container)):
+                cont = WebDriverWait(self.driver,10).until(
+                    EC.presence_of_all_elements_located((By.CSS_SELECTOR,container))
+                )[i]
+                try:
+                    self.title.append(cont.find_element(By.CSS_SELECTOR, title).text)
+                    self.href.append(cont.find_element(By.CSS_SELECTOR, href).get_attribute("href"))
+                    self.price.append(cont.find_element(By.CSS_SELECTOR, price).text)
+                    self.condition.append(cont.find_element(By.CSS_SELECTOR, condition).text)
+                except Exception:
+                    continue
+        else:
+            for cont in self.container:
+                try:
+                    self.title.append(cont.find_element(By.CSS_SELECTOR, title).text)
+                    self.href.append(cont.find_element(By.CSS_SELECTOR, href).get_attribute("href"))
+                    self.price.append(cont.find_element(By.CSS_SELECTOR, price).text)
+                    self.condition.append(cont.find_element(By.CSS_SELECTOR, condition).text)
+                except Exception:
+                    continue
 
-        
+
     def scroll_page(self):
-        for _ in range(70):
+        for _ in range(200):
             self.driver.execute_script("window.scrollBy(0,100)")
             time.sleep(0.1)
-            WebDriverWait(self.driver,5).until(
-                lambda d: d.execute_script("return document.readyState") == 'complete'
+
+
+
+    def load_next_page(self):
+        for _ in range(5):
+            self.driver.execute_script("window.scrollBy(0,400)")
+            time.sleep(2)
+            self.button_more = WebDriverWait(self.driver,10).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR,".button-more"))
             )
+            self.button_more.click()
 
 interface = Interface()
 data = interface.get_informations()
