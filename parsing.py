@@ -13,6 +13,8 @@ from selector import SELECTORS
 from URLS import URLS
 import os
 import pandas as pd
+from stylized_excel import styling_excel
+
 class Parsing:
     def __init__(self,url,search_element):
         self.url = url
@@ -25,16 +27,16 @@ class Parsing:
         
 
     def save_to_excel(self):
-        print(self.price)
         file_name = "Объявление.xlsx"
 
         if not os.path.exists("excel_file"):
             os.makedirs("excel_file")
 
         file_path = os.path.join("excel_file",file_name)
-        self.excel_dictionary = {"Названия товара":self.title,"Цена":self.price,"Ссылка":self.href,"Доп информация":self.condition}
-        self.df = pd.DataFrame(self.excel_dictionary)
-        self.df.to_excel(file_path)
+        excel_dictionary= {"Названия товара":self.title,"Цена":self.price,"Ссылка":self.href,"Доп информация":self.condition}
+        df = pd.DataFrame(excel_dictionary)
+        df.to_excel(file_path,index=False)
+        styling_excel(file_path)
 
 
     def extract_item_data(self,cont,selectors):
@@ -49,7 +51,7 @@ class Parsing:
     
     def create_driver(self):
         options = Options()
-        # options.add_argument("--headless")
+        options.add_argument("--headless")
         options.add_argument("window-size=1920,1080")
         driver = webdriver.Chrome(options=options)
         stealth(driver,languages=['en-US',"en","ru-RU","ru"],
@@ -70,7 +72,6 @@ class Parsing:
         self.input.clear()
         self.input.send_keys(self.search_element)
         self.input.send_keys(Keys.RETURN)
-
 
         if scroll_config:
             self.scroll_page(**scroll_config)
@@ -102,23 +103,13 @@ class Parsing:
             time.sleep(delay)
             if click_selector:
                 try:
+                    print("SS")
                     button_more = WebDriverWait(self.driver,10).until(
-                    EC.element_to_be_clickable((By.CSS_SELECTOR,".button-more"))
+                    EC.element_to_be_clickable((By.CSS_SELECTOR,click_selector))
                     )
                     button_more.click()
                 except TimeoutException:
                     break
-
-
-
-    def load_next_page(self):
-        for _ in range(5):
-            self.driver.execute_script("window.scrollBy(0,400)")
-            time.sleep(2)
-            self.button_more = WebDriverWait(self.driver,10).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR,".button-more"))
-            )
-            self.button_more.click()
 
 
 interface = Interface()
@@ -155,7 +146,7 @@ if isinstance(data,tuple):
             ("condition",config["condition"],None)],
             scroll_config=config["scroll"],
             )
-            parse.get_data()
+            parse.save_to_excel()
 
         case "Яндекс маркет":
             config = SELECTORS["Яндекс маркет"]
@@ -169,7 +160,7 @@ if isinstance(data,tuple):
             ("condition",config["condition"],None)],
             scroll_config=config["scroll"],
             )
-            parse.get_data()
+            parse.save_to_excel()
         
         case "Озон":
             config = SELECTORS["Озон"]

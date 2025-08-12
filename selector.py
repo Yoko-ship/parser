@@ -6,7 +6,7 @@ SELECTORS = {
         "href": ".css-1tqlkj0",
         "price": ".css-uj7mm0",
         "condition": ".css-iudov9 span",
-        "scroll": None  
+        "scroll": None
     },
     "UZUM": {
         "input": ".input-line input",
