@@ -4,14 +4,15 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException
+from selenium.common.exceptions import TimeoutException
 from interface import Interface
 from selenium_stealth import stealth
 from itertools import zip_longest
 import time
 from selector import SELECTORS
 from URLS import URLS
-
+import os
+import pandas as pd
 class Parsing:
     def __init__(self,url,search_element):
         self.url = url
@@ -21,12 +22,20 @@ class Parsing:
         self.href = []
         self.price = []
         self.condition = []
+        
 
-    def get_data(self):
-        with open("Объявления.txt","w",encoding="UTF-8") as file:
-            for t,p,h,c in zip_longest(self.title,self.price,self.href,self.condition,fillvalue=""):
-                file.write(f"{t} || {p} || {h} || {c}  \n")
-            print("Товары успешно добавлены в Объявления.txt")
+    def save_to_excel(self):
+        print(self.price)
+        file_name = "Объявление.xlsx"
+
+        if not os.path.exists("excel_file"):
+            os.makedirs("excel_file")
+
+        file_path = os.path.join("excel_file",file_name)
+        self.excel_dictionary = {"Названия товара":self.title,"Цена":self.price,"Ссылка":self.href,"Доп информация":self.condition}
+        self.df = pd.DataFrame(self.excel_dictionary)
+        self.df.to_excel(file_path)
+
 
     def extract_item_data(self,cont,selectors):
         data = {}
@@ -40,7 +49,7 @@ class Parsing:
     
     def create_driver(self):
         options = Options()
-        options.add_argument("--headless")
+        # options.add_argument("--headless")
         options.add_argument("window-size=1920,1080")
         driver = webdriver.Chrome(options=options)
         stealth(driver,languages=['en-US',"en","ru-RU","ru"],
@@ -54,6 +63,7 @@ class Parsing:
     
     def parse_web(self,input,container,selectors,scroll_config=None):
         self.driver.get(self.url)
+        self.driver.execute_script("document.body.style.zoom='50%'")
         self.input = WebDriverWait(self.driver,10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR,input))
         )
@@ -131,7 +141,7 @@ if isinstance(data,tuple):
             ("condition",config["condition"],None)],
             scroll_config=config["scroll"],
             )
-            parse.get_data()
+            parse.save_to_excel()
         
         case "UZUM":
             config = SELECTORS["UZUM"]
@@ -173,6 +183,8 @@ if isinstance(data,tuple):
             ("condition",config["condition"],None)],
             scroll_config=config["scroll"],
             )
-            parse.get_data()
+            parse.save_to_excel()
+
+
             
 

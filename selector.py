@@ -27,7 +27,7 @@ SELECTORS = {
         "scroll": {"step": 100, "repeats": 200, "delay": 0.1}
     },
     "Озон": {
-        "input": ".tr8_31",
+        "input": ".ru0_31 > input",
         "container": ".i7u_24 > div",
         "title": ".bq02_5_0-a span",
         "href": ".q4b1_3_0-a",
