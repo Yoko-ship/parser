@@ -6,7 +6,8 @@ SELECTORS = {
         "href": ".css-1tqlkj0",
         "price": ".css-uj7mm0",
         "condition": ".css-iudov9 span",
-        "scroll": None
+        "scroll": None,
+        "URL":"https://www.olx.uz/",
     },
     "UZUM": {
         "input": ".input-line input",
@@ -15,24 +16,27 @@ SELECTORS = {
         "href": "[data-test-id='product-card--default']",
         "price": ".currency",
         "condition": ".reviews",
-        "scroll": {"step": 400, "repeats": 5, "click_selector": ".button-more", "delay": 2}
+        "scroll": {"step": 400, "repeats": 5, "click_selector": ".button-more", "delay": 2},
+        "URL":"https://uzum.uz/ru",
     },
-    "Яндекс маркет": {
-        "input": "#header-search",
-        "container": "[data-auto='SerpList'] > div, [data-auto='SerpGrid'] > div",
-        "title": "[data-auto='snippet-title']",
-        "href": ".EQlfk",
-        "price": "[data-auto='snippet-price-current']",
-        "condition": "[data-baobab-name='rating'] > *:first-child",
-        "scroll": {"step": 100, "repeats": 200, "delay": 0.1}
-    },
-    "Озон": {
-        "input": ".ru0_31 > input",
-        "container": ".i7u_24 > div",
-        "title": ".bq02_5_0-a span",
-        "href": ".q4b1_3_0-a",
-        "price": ".c35_3_2-a0 > *:first-child",
-        "condition": ".p6b2_5_0-a4 > *:nth-child(2)",
-        "scroll": {"step": 100, "repeats": 200, "delay": 0.1}
-    }
+    # "Яндекс маркет": {
+    #     "input": "#header-search",
+    #     "container": "[data-auto='SerpList'] > div, [data-auto='SerpGrid'] > div",
+    #     "title": "[data-auto='snippet-title']",
+    #     "href": ".EQlfk",
+    #     "price": "[data-auto='snippet-price-current']",
+    #     "condition": "[data-baobab-name='rating'] > *:first-child",
+    #     "scroll": {"step": 100, "repeats": 200, "delay": 0.1},
+    #     "URL":"https://market.yandex.uz/",
+    # },
+    # "Озон": {
+    #     "input": ".ru0_31 > input",
+    #     "container": ".i7u_24 > div",
+    #     "title": ".bq02_5_0-a span",
+    #     "href": ".q4b1_3_0-a",
+    #     "price": ".c35_3_2-a0 > *:first-child",
+    #     "condition": ".p6b2_5_0-a4 > *:nth-child(2)",
+    #     "scroll": {"step": 100, "repeats": 200, "delay": 0.1},
+    #     "URL":"https://uz.ozon.com/",
+    # }
 }

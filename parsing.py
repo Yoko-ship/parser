@@ -14,6 +14,8 @@ from URLS import URLS
 import os
 import pandas as pd
 from stylized_excel import styling_excel
+from openpyxl.utils.dataframe import dataframe_to_rows
+import openpyxl
 
 class Parsing:
     def __init__(self,url,search_element):
@@ -28,17 +30,31 @@ class Parsing:
 
     def save_to_excel(self):
         file_name = "Объявление.xlsx"
+        folder = "excel_file"
 
-        if not os.path.exists("excel_file"):
+        if not os.path.exists(folder):
             os.makedirs("excel_file")
 
-        file_path = os.path.join("excel_file",file_name)
+
+        file_path = os.path.join(folder,file_name)
         excel_dictionary= {"Названия товара":self.title,"Цена":self.price,"Ссылка":self.href,"Доп информация":self.condition}
         df = pd.DataFrame(excel_dictionary)
-        df.to_excel(file_path,index=False)
-        styling_excel(file_path)
 
+        if os.path.isfile(file_path):
+            workbook = openpyxl.load_workbook(file_path)
+            sheet = workbook["Sheet1"]
+            for row in dataframe_to_rows(df,index=False,header=False):
+                sheet.append(row)
 
+            workbook.save(file_path)
+            workbook.close()
+            styling_excel(file_path)
+        else:
+            df.to_excel(file_path,index=False)
+            styling_excel(file_path)
+        
+        self.driver.close()
+        
     def extract_item_data(self,cont,selectors):
         data = {}
         for key,selector,attr in selectors:
@@ -51,7 +67,7 @@ class Parsing:
     
     def create_driver(self):
         options = Options()
-        options.add_argument("--headless")
+        # options.add_argument("--headless")
         options.add_argument("window-size=1920,1080")
         driver = webdriver.Chrome(options=options)
         stealth(driver,languages=['en-US',"en","ru-RU","ru"],
@@ -103,13 +119,14 @@ class Parsing:
             time.sleep(delay)
             if click_selector:
                 try:
-                    print("SS")
                     button_more = WebDriverWait(self.driver,10).until(
                     EC.element_to_be_clickable((By.CSS_SELECTOR,click_selector))
                     )
                     button_more.click()
                 except TimeoutException:
                     break
+
+    
 
 
 interface = Interface()
@@ -119,62 +136,78 @@ if isinstance(data,tuple):
     product = data[0]
     internet_magazin = data[1]
     is_closed = data[2]
-    match internet_magazin:
-        case "OLX":
-            config = SELECTORS["OLX"]
-            parse = Parsing(URLS["OLX_URL"],product)
-            parse.parse_web(
-            config["input"],
-            config["container"],
-            [("title",config["title"],None),
-            ("href",config["href"],"href"),
-            ("price",config["price"],None),
-            ("condition",config["condition"],None)],
-            scroll_config=config["scroll"],
-            )
-            parse.save_to_excel()
-        
-        case "UZUM":
-            config = SELECTORS["UZUM"]
-            parse = Parsing(URLS["UZUM_URL"],product)
-            parse.parse_web(
-            config["input"],
-            config["container"],
-            [("title",config["title"],None),
-            ("href",config["href"],"href"),
-            ("price",config["price"],None),
-            ("condition",config["condition"],None)],
-            scroll_config=config["scroll"],
-            )
-            parse.save_to_excel()
 
-        case "Яндекс маркет":
-            config = SELECTORS["Яндекс маркет"]
-            parse = Parsing(URLS["YANDEX_URL"],product)
-            parse.parse_web(
-            config["input"],
-            config["container"],
-            [("title",config["title"],None),
+
+    for sites in SELECTORS:
+        config = SELECTORS[sites]
+        parse = Parsing(config["URL"],product)
+        parse.parse_web(config['input'],config['container'],[
+            ("title",config["title"],None),
             ("href",config["href"],"href"),
             ("price",config["price"],None),
-            ("condition",config["condition"],None)],
-            scroll_config=config["scroll"],
-            )
-            parse.save_to_excel()
+            ("condition",config["condition"],None)
+            ],scroll_config=config["scroll"])
+
+        parse.save_to_excel()
+
+
+
+    # match internet_magazin:
+    #     case "OLX":
+    #         config = SELECTORS["OLX"]
+    #         parse = Parsing(URLS["OLX_URL"],product)
+    #         parse.parse_web(
+    #         config["input"],
+    #         config["container"],
+    #         [("title",config["title"],None),
+    #         ("href",config["href"],"href"),
+    #         ("price",config["price"],None),
+    #         ("condition",config["condition"],None)],
+    #         scroll_config=config["scroll"],
+    #         )
+    #         parse.save_to_excel()
         
-        case "Озон":
-            config = SELECTORS["Озон"]
-            parse = Parsing(URLS["OZON_URL"],product)
-            parse.parse_web(
-            config["input"],
-            config["container"],
-            [("title",config["title"],None),
-            ("href",config["href"],"href"),
-            ("price",config["price"],None),
-            ("condition",config["condition"],None)],
-            scroll_config=config["scroll"],
-            )
-            parse.save_to_excel()
+    #     case "UZUM":
+    #         config = SELECTORS["UZUM"]
+    #         parse = Parsing(URLS["UZUM_URL"],product)
+    #         parse.parse_web(
+    #         config["input"],
+    #         config["container"],
+    #         [("title",config["title"],None),
+    #         ("href",config["href"],"href"),
+    #         ("price",config["price"],None),
+    #         ("condition",config["condition"],None)],
+    #         scroll_config=config["scroll"],
+    #         )
+    #         parse.save_to_excel()
+
+    #     case "Яндекс маркет":
+    #         config = SELECTORS["Яндекс маркет"]
+    #         parse = Parsing(URLS["YANDEX_URL"],product)
+    #         parse.parse_web(
+    #         config["input"],
+    #         config["container"],
+    #         [("title",config["title"],None),
+    #         ("href",config["href"],"href"),
+    #         ("price",config["price"],None),
+    #         ("condition",config["condition"],None)],
+    #         scroll_config=config["scroll"],
+    #         )
+    #         parse.save_to_excel()
+        
+    #     case "Озон":
+    #         config = SELECTORS["Озон"]
+    #         parse = Parsing(URLS["OZON_URL"],product)
+    #         parse.parse_web(
+    #         config["input"],
+    #         config["container"],
+    #         [("title",config["title"],None),
+    #         ("href",config["href"],"href"),
+    #         ("price",config["price"],None),
+    #         ("condition",config["condition"],None)],
+    #         scroll_config=config["scroll"],
+    #         )
+    #         parse.save_to_excel()
 
 
             
