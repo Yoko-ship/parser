@@ -19,7 +19,7 @@ SELECTORS = {
         "condition": ".reviews",
         "scroll": {"step": 400, "repeats": 5, "click_selector": ".button-more", "delay": 2},
         "URL":"https://uzum.uz/ru",
-        "price_filter":"//input[contains(@placeholder,'80000000')]"
+        "price_filter":"//input[@data-test-id='input__max-price']"
     },
     "Яндекс маркет": {
         "input": "#header-search",

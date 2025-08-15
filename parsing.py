@@ -71,7 +71,7 @@ class Parsing:
         options.add_experimental_option("excludeSwitches",['enable-logging'])
         options.add_argument("--log-level=3")
         options.add_argument("--silent") 
-        options.add_argument("--headless")
+        # options.add_argument("--headless")
         options.add_argument("window-size=1920,1080")
         driver = webdriver.Chrome(service=service,options=options)
         stealth(driver,languages=['en-US',"en","ru-RU","ru"],
@@ -95,37 +95,42 @@ class Parsing:
         self.input.send_keys(Keys.RETURN)
 
 
-        filter_price = WebDriverWait(self.driver,10).until(
-            EC.presence_of_element_located((By.XPATH,price_filter))
-        )
+        time.sleep(2)
+        try:
 
-        if not self.url == "https://uz.ozon.com/":
+            filter_price = WebDriverWait(self.driver,10).until(
+                EC.presence_of_element_located((By.XPATH,price_filter))
+            )
+
             if price != 0:
                 filter_price.clear()
                 filter_price.send_keys(price)
                 filter_price.send_keys(Keys.RETURN)
 
-        if scroll_config:
-            self.scroll_page(**scroll_config)
+            if scroll_config:
+                self.scroll_page(**scroll_config)
 
-        time.sleep(3)
-        self.container = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_all_elements_located((By.CSS_SELECTOR, container)))
+            time.sleep(3)
+            self.container = WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_all_elements_located((By.CSS_SELECTOR, container)))
 
 
-        time.sleep(5)
-        for i in range(len(self.container)):
-            cont = WebDriverWait(self.driver,10).until(
-                EC.presence_of_all_elements_located((By.CSS_SELECTOR,container))
-            )[i]
-            try:
-                item = self.extract_item_data(cont,selectors)
-                self.title.append(item["title"])
-                self.href.append(item["href"])
-                self.price.append(item["price"])
-                self.condition.append(item["condition"])
-            except Exception:
-                    continue
+            time.sleep(5)
+
+            for i in range(len(self.container)):
+                cont = WebDriverWait(self.driver,10).until(
+                    EC.presence_of_all_elements_located((By.CSS_SELECTOR,container))
+                )[i]
+                try:
+                    item = self.extract_item_data(cont,selectors)
+                    self.title.append(item["title"])
+                    self.href.append(item["href"])
+                    self.price.append(item["price"])
+                    self.condition.append(item["condition"])
+                except Exception:
+                        continue
+        except Exception:
+            print("Произошла ошибка,попробуйте ещё раз!")
 
 
 
