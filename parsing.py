@@ -15,7 +15,7 @@ import pandas as pd
 from stylized_excel import styling_excel
 from openpyxl.utils.dataframe import dataframe_to_rows
 import openpyxl
-import sys
+
 
 class Parsing:
     def __init__(self,url,search_element):
@@ -217,26 +217,6 @@ elif isinstance(data,tuple):
             scroll_config=config["scroll"],
             )
             parse.save_to_excel()
-        
-        # case "Озон":
-        #     config = SELECTORS["Озон"]
-        #     parse = Parsing(config["URL"],product)
-        #     parse.parse_web(
-        #     config["input"],
-        #     config["price_filter"],
-        #     price,
-        #     config["container"],
-        #     [("title",config["title"],None),
-        #     ("href",config["href"],"href"),
-        #     ("price",config["price"],None),
-        #     ("condition",config["condition"],None)],
-        #     scroll_config=config["scroll"],
-        #     )
-        #     parse.save_to_excel()
-
-
-
-
 
     
 
