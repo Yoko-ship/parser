@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.common.exceptions import TimeoutException
 from interface import Interface
 from selenium_stealth import stealth
@@ -14,6 +15,7 @@ import pandas as pd
 from stylized_excel import styling_excel
 from openpyxl.utils.dataframe import dataframe_to_rows
 import openpyxl
+import sys
 
 class Parsing:
     def __init__(self,url,search_element):
@@ -64,10 +66,14 @@ class Parsing:
         return data
     
     def create_driver(self):
+        service = Service(log_output=os.devnull)
         options = Options()
-        # options.add_argument("--headless")
+        options.add_experimental_option("excludeSwitches",['enable-logging'])
+        options.add_argument("--log-level=3")
+        options.add_argument("--silent") 
+        options.add_argument("--headless")
         options.add_argument("window-size=1920,1080")
-        driver = webdriver.Chrome(options=options)
+        driver = webdriver.Chrome(service=service,options=options)
         stealth(driver,languages=['en-US',"en","ru-RU","ru"],
                 vendor="Google Inc.",
                 platform="Win32",
@@ -77,7 +83,8 @@ class Parsing:
                 )
         return driver
     
-    def parse_web(self,input,container,selectors,scroll_config=None):
+    def parse_web(self,input,price_filter,price,container,selectors,scroll_config=None):
+        print("Идет парсинг...")
         self.driver.get(self.url)
         self.driver.execute_script("document.body.style.zoom='50%'")
         self.input = WebDriverWait(self.driver,10).until(
@@ -87,6 +94,17 @@ class Parsing:
         self.input.send_keys(self.search_element)
         self.input.send_keys(Keys.RETURN)
 
+
+        filter_price = WebDriverWait(self.driver,10).until(
+            EC.presence_of_element_located((By.XPATH,price_filter))
+        )
+
+        if not self.url == "https://uz.ozon.com/":
+            if price != 0:
+                filter_price.clear()
+                filter_price.send_keys(price)
+                filter_price.send_keys(Keys.RETURN)
+
         if scroll_config:
             self.scroll_page(**scroll_config)
 
@@ -94,7 +112,7 @@ class Parsing:
         self.container = WebDriverWait(self.driver, 10).until(
                 EC.presence_of_all_elements_located((By.CSS_SELECTOR, container)))
 
-        #* для узума тк есть некоое задержка изза чего элементы остаются пустым
+
         time.sleep(5)
         for i in range(len(self.container)):
             cont = WebDriverWait(self.driver,10).until(
@@ -130,13 +148,13 @@ class Parsing:
 interface = Interface()
 data = interface.get_informations()
 
-
-if isinstance(data,tuple) and len(data) == 2:
+if isinstance(data,tuple) and len(data) == 3:
     product = data[1]
+    price = data[2]
     for sites in SELECTORS:
         config = SELECTORS[sites]
         parse = Parsing(config["URL"],product)
-        parse.parse_web(config['input'],config['container'],[
+        parse.parse_web(config['input'],config["price_filter"],price,config['container'],[
             ("title",config["title"],None),
             ("href",config["href"],"href"),
             ("price",config["price"],None),
@@ -150,12 +168,15 @@ elif isinstance(data,tuple):
     product = data[0]
     internet_magazin = data[1]
     is_closed = data[2]
+    price = data[3]
     match internet_magazin:
         case "OLX":
             config = SELECTORS["OLX"]
             parse = Parsing(config["URL"],product)
             parse.parse_web(
             config["input"],
+            config["price_filter"],
+            price,
             config["container"],
             [("title",config["title"],None),
             ("href",config["href"],"href"),
@@ -170,6 +191,8 @@ elif isinstance(data,tuple):
             parse = Parsing(config["URL"],product)
             parse.parse_web(
             config["input"],
+            config['price_filter'],
+            price,
             config["container"],
             [("title",config["title"],None),
             ("href",config["href"],"href"),
@@ -184,6 +207,8 @@ elif isinstance(data,tuple):
             parse = Parsing(config["URL"],product)
             parse.parse_web(
             config["input"],
+            config['price_filter'],
+            price,
             config["container"],
             [("title",config["title"],None),
             ("href",config["href"],"href"),
@@ -193,19 +218,21 @@ elif isinstance(data,tuple):
             )
             parse.save_to_excel()
         
-        case "Озон":
-            config = SELECTORS["Озон"]
-            parse = Parsing(config["URL"],product)
-            parse.parse_web(
-            config["input"],
-            config["container"],
-            [("title",config["title"],None),
-            ("href",config["href"],"href"),
-            ("price",config["price"],None),
-            ("condition",config["condition"],None)],
-            scroll_config=config["scroll"],
-            )
-            parse.save_to_excel()
+        # case "Озон":
+        #     config = SELECTORS["Озон"]
+        #     parse = Parsing(config["URL"],product)
+        #     parse.parse_web(
+        #     config["input"],
+        #     config["price_filter"],
+        #     price,
+        #     config["container"],
+        #     [("title",config["title"],None),
+        #     ("href",config["href"],"href"),
+        #     ("price",config["price"],None),
+        #     ("condition",config["condition"],None)],
+        #     scroll_config=config["scroll"],
+        #     )
+        #     parse.save_to_excel()
 
 
 

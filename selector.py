@@ -8,6 +8,7 @@ SELECTORS = {
         "condition": ".css-iudov9 span",
         "scroll": None,
         "URL":"https://www.olx.uz/",
+        "price_filter":"//input[contains(@placeholder,'до:')]"
     },
     "UZUM": {
         "input": ".input-line input",
@@ -18,6 +19,7 @@ SELECTORS = {
         "condition": ".reviews",
         "scroll": {"step": 400, "repeats": 5, "click_selector": ".button-more", "delay": 2},
         "URL":"https://uzum.uz/ru",
+        "price_filter":"//input[contains(@placeholder,'80000000')]"
     },
     "Яндекс маркет": {
         "input": "#header-search",
@@ -28,15 +30,17 @@ SELECTORS = {
         "condition": "[data-baobab-name='rating'] > *:first-child",
         "scroll": {"step": 100, "repeats": 200, "delay": 0.1},
         "URL":"https://market.yandex.uz/",
+        "price_filter":"//input[@id='range-filter-field-glprice_25563_max']"
     },
-    "Озон": {
-        "input": ".ru0_31 > input",
-        "container": ".i7u_24 > div",
-        "title": ".bq02_5_0-a span",
-        "href": ".q4b1_3_0-a",
-        "price": ".c35_3_2-a0 > *:first-child",
-        "condition": ".p6b2_5_0-a4 > *:nth-child(2)",
-        "scroll": {"step": 100, "repeats": 200, "delay": 0.1},
-        "URL":"https://uz.ozon.com/",
-    }
+    # "Озон": {
+    #     "input": ".ru0_31 > input",
+    #     "container": ".iv0_24 > div",
+    #     "title": ".bq02_5_0-a span",
+    #     "href": ".q4b1_3_0-a",
+    #     "price": ".c35_3_2-a0 > *:first-child",
+    #     "condition": ".p6b2_5_0-a4 > *:nth-child(2)",
+    #     "scroll": {"step": 100, "repeats": 200, "delay": 0.1},
+    #     "URL":"https://uz.ozon.com/",
+    #     "price_filter":"//div[contains(@class, 'f5_3_2-b3')]//input"
+    # }
 }
